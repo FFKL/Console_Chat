@@ -1,14 +1,17 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+package org.chat;
+
+import java.io.*;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Scanner;
 
 public class Client {
-    private BufferedReader in;
-    private PrintWriter out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
     private Socket socket;
+    private Message message;
+    private Resender resend = new Resender();
 
     public Client() {
         Scanner scan = new Scanner(System.in);
@@ -19,20 +22,21 @@ public class Client {
 
         try {
             socket = new Socket(ip, 1234);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
 
-
+            String name;
             System.out.println("Введите свой ник:");
-            out.println(scan.nextLine());
-
-            Resender resend = new Resender();
+            name = scan.nextLine();
+            message = new Message(name, null, new Date(System.currentTimeMillis()));
+            out.writeObject(message);
             resend.start();
 
             String str = "";
             while (!str.equals("exit")) {
                 str = scan.nextLine();
-                out.println(str);
+                message = new Message(name, str, new Date((System.currentTimeMillis())));
+                out.writeObject(message);
             }
             resend.setStop();
         } catch (Exception e) {
@@ -64,11 +68,13 @@ public class Client {
         public void run() {
             try {
                 while (!stoped) {
-                    String str = in.readLine();
+                    String str = (String) in.readObject();
                     System.out.println(str);
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка при получении сообщения.");
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }

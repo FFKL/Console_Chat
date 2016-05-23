@@ -1,4 +1,6 @@
-import server.Server;
+package org.chat;
+
+import org.chat.server.Server;
 
 public class Main {
     public static void main(String[] args) {

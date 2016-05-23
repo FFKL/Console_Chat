@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <port>1234</port>
+    <messages-log-count>5</messages-log-count>
+    <connections-count>10</connections-count>
+</resources>
