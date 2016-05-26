@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <port>1234</port>
-    <messages-log-count>5</messages-log-count>
-    <connections-count>10</connections-count>
+    <settings>
+        <port>1234</port>
+        <messages-log-count>5</messages-log-count>
+        <connections-count>10</connections-count>
+    </settings>
+    <accounts>
+        <account>
+            <login>Ivan</login>
+            <password>1</password>
+        </account>
+        <account>
+            <login>Petr</login>
+            <password>2</password>
+        </account>
+        <account>
+            <login>Doog</login>
+            <password>3</password>
+        </account>
+    </accounts>
 </resources>
