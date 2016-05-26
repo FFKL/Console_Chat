@@ -25,24 +25,25 @@ public class Client {
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
-            String name;
             System.out.println("Введите свой ник:");
-            name = scan.nextLine();
-            message = new Message(name, null, new Date(System.currentTimeMillis()));
+            String name = scan.nextLine();
+            System.out.println("Введите пароль");
+            String password = scan.nextLine();
+            message = new Message(name, password, new Date(System.currentTimeMillis()));
             out.writeObject(message);
             resend.start();
 
             String str = "";
             while (!str.equals("exit")) {
                 str = scan.nextLine();
-                message = new Message(name, str, new Date((System.currentTimeMillis())));
-                out.writeObject(message);
+                if (!socket.isClosed()) {
+                    message = new Message(name, str, new Date((System.currentTimeMillis())));
+                    out.writeObject(message);
+                }
             }
             resend.setStop();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            close();
         }
     }
 
@@ -70,7 +71,11 @@ public class Client {
                 while (!stoped) {
                     String str = (String) in.readObject();
                     System.out.println(str);
+                    if (str.equals("Неверно введен пароль") || str.equals("Неверно введен логин")){
+                        this.setStop();
+                    }
                 }
+                close();
             } catch (IOException e) {
                 System.err.println("Ошибка при получении сообщения.");
                 e.printStackTrace();

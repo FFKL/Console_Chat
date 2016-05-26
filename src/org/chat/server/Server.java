@@ -3,6 +3,8 @@ package org.chat.server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import org.chat.Account;
 import org.chat.Message;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,17 +78,13 @@ public class Server {
             }
         }
 
-        public void run() {
+        private void runChat(Message startMessage) {
             try {
-                Message message;
+                Message message = startMessage;
                 List<String> lastMessages = messagesStorage.getList();
-                message = (Message) in.readObject();
-
-                synchronized (connections) {
-                    for (Connection c : connections) {
-                        String date = new SimpleDateFormat("dd.MM.yyyy").format(message.getDate());
-                        c.out.writeObject(date + " | " + message.getName() + " подключился.");
-                    }
+                for (Connection c : connections) {
+                    String date = new SimpleDateFormat("dd.MM.yyyy").format(message.getDate());
+                    c.out.writeObject(date + " | " + message.getLogin() + " подключился.");
                 }
                 for (String mess : lastMessages) {
                     out.writeObject(mess);
@@ -96,19 +94,40 @@ public class Server {
                     message = (Message) in.readObject();
                     if (message.getText().equals("exit")) break;
                     String date = new SimpleDateFormat("dd.MM.yyyy").format(message.getDate());
-                    String messageText = date + " | " + message.getName() + ": " + message.getText();
-                    synchronized (connections) {
-                        for (Connection c : connections) {
-                            c.out.writeObject(messageText);
-                        }
+                    String messageText = date + " | " + message.getLogin() + ": " + message.getText();
+                    for (Connection c : connections) {
+                        c.out.writeObject(messageText);
                     }
                     messagesStorage.addToList(messageText);
                 }
                 String date = new SimpleDateFormat("dd.MM.yyyy").format(message.getDate());
-                synchronized (connections) {
-                    for (Connection c : connections) {
-                        c.out.writeObject(date + " | " + message.getName() + " ушел.");
+                for (Connection c : connections) {
+                    c.out.writeObject(date + " | " + message.getLogin() + " ушел.");
+                }
+                this.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void run() {
+            try {
+                Message message = (Message) in.readObject();
+                List<Account> accounts = parser.getAccounts();
+                Account currentAccount = new Account(" ", " ");
+                for (Account a : accounts) {
+                    if (message.getLogin().equals(a.getLogin())) {
+                        currentAccount = a;
                     }
+                }
+                if (currentAccount.getLogin().equals(" ")) {
+                    out.writeObject("Неверно введен логин");
+                } else if (!currentAccount.getPassword().equals(message.getText())) {
+                    out.writeObject("Неверно введен пароль");
+                } else {
+                    this.runChat(message);
                 }
                 this.close();
             } catch (IOException e) {

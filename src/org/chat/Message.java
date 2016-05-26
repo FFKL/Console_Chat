@@ -1,23 +1,22 @@
 package org.chat;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.Date;
 
 public class Message implements Serializable {
 
-    String name;
+    String login;
     String text;
     Date date;
 
-    Message(String name, String text, Date date) {
-        this.name = name;
+    Message(String login, String text, Date date) {
+        this.login = login;
         this.text = text;
         this.date = date;
     }
 
-    public String getName() {
-        return name;
+    public String getLogin() {
+        return login;
     }
 
     public String getText() {
